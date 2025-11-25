@@ -1,49 +1,43 @@
-import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from '../firebaseConfig.js'; // Ajusta el path si es diferente
-import mostrarLogin from './login.js'; // IMPORTANTE
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebaseConfig.js";
+import mostrarLogin from "./login.js";
 
 export default function mostrarRegistro() {
   const app = document.getElementById("app");
 
   app.innerHTML = `
-    <h2>Registro</h2>
-    <input type="text" id="nombre" placeholder="Nombre"><br>
-    <input type="email" id="correo" placeholder="Correo electrónico"><br>
-    <input type="password" id="contrasena" placeholder="Contraseña"><br>
-    <input type="text" id="fecha" placeholder="Fecha de nacimiento"><br>
-    <input type="tel" id="telefono" placeholder="Teléfono"><br>
-    <button id="btnRegistro">Registrarse</button>
+    <div class="form-container">
+      <h2>Crear Cuenta</h2>
+
+      <input id="regEmail" type="email" placeholder="Correo electrónico" />
+      <input id="regPass" type="password" placeholder="Contraseña" />
+      <input id="regPass2" type="password" placeholder="Repetir contraseña" />
+
+      <button id="btnRegistrar">Registrarme</button>
+
+      <small>¿Ya tienes cuenta?
+        <a id="goLogin">Iniciar sesión</a>
+      </small>
+    </div>
   `;
 
-  document.getElementById("btnRegistro").addEventListener("click", async () => {
-    const nombre = document.getElementById("nombre").value;
-    const correo = document.getElementById("correo").value;
-    const contrasena = document.getElementById("contrasena").value;
-    const fecha = document.getElementById("fecha").value;
-    const telefono = document.getElementById("telefono").value;
+  document.getElementById("goLogin").onclick = mostrarLogin;
 
-    let ganados = 0;
-    let perdidos = 0;
+  document.getElementById("btnRegistrar").onclick = async () => {
+    const email = document.getElementById("regEmail").value;
+    const pass = document.getElementById("regPass").value;
+    const pass2 = document.getElementById("regPass2").value;
+
+    if (pass !== pass2) {
+      alert("Las contraseñas no coinciden");
+      return;
+    }
 
     try {
-      const userCredential = await createUserWithEmailAndPassword(auth, correo, contrasena);
-      const user = userCredential.user;
-
-      await setDoc(doc(db, 'usuarios', user.uid), {
-        uid: user.uid,
-        nombre,
-        correo,
-        fecha,
-        telefono,
-        ganados,
-        perdidos
-      });
-
-      alert('Usuario registrado correctamente');
-      mostrarLogin();
+      await createUserWithEmailAndPassword(auth, email, pass);
+      alert("Usuario registrado con éxito ✔");
     } catch (error) {
-      alert('Error al registrarse: ' + error.message);
+      alert("Error al registrar: " + error.message);
     }
-  });
+  };
 }
